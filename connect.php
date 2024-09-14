@@ -1,14 +1,8 @@
 <?php
-$con=new mysqli('localhost:4306','root','','crudoperations');
- 
-if($con)
-{
-    echo "connect";
-   #echo "<h2>delete successfully</h2>";
-}
-else{
-   die(mysqli_error($con));
-}
+// Establish database connection
+$con = new mysqli('localhost:3306', 'root', '', 'crudoperations');
 
-
-?>
+// Check connection
+if ($con->connect_error) {
+    die("Connection failed: " . $con->connect_error);
+}
