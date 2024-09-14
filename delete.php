@@ -1,20 +1,15 @@
 <?php
+include 'connect.php';
+if(isset($_GET['deleteid'])){
+    $id=$_GET['deleteid'];
 
-include_once 'connect.php';
-
-if (isset($_GET['deleteid'])) {
-    $id = $_GET['deleteid'];
-    $sql = " delete FROM display.php where id=$id";
-    $result = mysqli_query($con, $sql);
-
-    if ($result) {
-            //echo "successfully deleted row with id ";
-            
-    }
-    else{
+    $sql="delete from crud where id=$id";
+    $result=mysqli_query($con,$sql);
+    if($result){
+        // echo "Deleted successfull";
+        header('location:display.php');
+    }else{
         die(mysqli_error($con));
     }
 }
-?>
-<!-- <br>
-<a href = "display.php"><button type="button">DISPLAY PAGE</button></a> -->
+
