@@ -1,6 +1,6 @@
 <?php
 // Include the connection file to connect to the MySQL database
-include 'connection.php';
+include 'connect.php';
 
 // Check connection
 if ($conn->connect_error) {
