@@ -1,90 +1,203 @@
 <?php
-session_start(); // Start the session
-include 'connect.php'; // Include your database connection file
+// Include the connection file to connect to the MySQL database
+include 'connection.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // This part always redirects to dashboard.php regardless of credentials
-    header("Location: dashboard.php");
-    exit();
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-mysqli_close($con);
+$showModal = false;
+$errorMessage = '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    // Fetch the user details from the database
+    $sql = "SELECT * FROM exampledb WHERE username='$username'";
+    $result = $conn->query($sql);
+
+  // In login.php
+
+if ($result->num_rows > 0) {
+    // Verify the password
+    $row = $result->fetch_assoc();
+    if (password_verify($password, $row['password'])) {
+        // Start session and set session variables
+        session_start();
+        $_SESSION['username'] = $row['username'];
+
+        // Check if user info is already filled
+        if (empty($row['fname'])) {
+            // Redirect to user info page
+            header('Location: user_info.php'); // Create this page to collect user info
+            exit();
+        } else {
+            // Redirect to index.php after successful login
+            header('Location: index.php');
+            exit();
+        }
+    } else {
+        $showModal = true;
+        $errorMessage = "Incorrect username or password.";
+    }
+} else {
+    $showModal = true;
+    $errorMessage = "Incorrect username or password.";
+}
+
+}
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Colorful Login Page</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <title>Login</title>
     <style>
+        /* Center the form on the page */
         body {
-            background: linear-gradient(135deg, #e3f2fd, #ffe0b2); /* Light pastel gradient */
-            height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            font-family: 'Arial', sans-serif;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
         }
-        .login-container {
-            background: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
         }
+
         h2 {
             margin-bottom: 20px;
-            color: #ffab40; /* Light orange */
-            text-align: center;
         }
-        .form-control {
-            border-radius: 8px;
-            border: 2px solid #80deea; /* Light teal */
-            transition: border-color 0.3s ease-in-out;
+
+        input[type="text"], input[type="password"] {
+            width: 90%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
         }
-        .form-control:focus {
-            border-color: #ffab40; /* Light orange */
-            box-shadow: 0 0 0 0.2rem rgba(255, 171, 64, 0.25);
+
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .btn-primary {
-            background-color: #80deea; /* Light teal */
-            border-color: #80deea;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
+
+        input[type="submit"]:hover {
+            background-color: #218838;
         }
-        .btn-primary:hover {
-            background-color: #ffab40; /* Light orange */
-            border-color: #ffab40;
-        }
-        .footer {
-            text-align: center;
+
+        .register-link, .forgot-password-link {
             margin-top: 20px;
         }
-        .footer a {
-            color: #80deea; /* Light teal */
+
+        .register-link a, .forgot-password-link a {
+            color: #007bff;
             text-decoration: none;
         }
+
+        .register-link a:hover, .forgot-password-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: <?= $showModal ? 'block' : 'none' ?>;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            margin: 15% auto;
+            padding: 20px;
+            border: 2px solid #dc3545; /* Red border */
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545; /* Red text for header */
+            margin-bottom: 10px;
+        }
+
+        .modal button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal button:hover {
+            background-color: #c82333;
+        }
     </style>
+    <script>
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+    </script>
 </head>
 <body>
-    <div class="login-container">
-        <h2>User Login</h2>
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
+    <div class="container">
+        <h2>Login</h2>
+        <form method="post" action="login.php">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" autocomplete="username" required><br><br>
+
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" autocomplete="new-password" required><br><br>
+
+            <input type="submit" value="Login">
         </form>
-        <p class="footer mt-3">Don't have an account? <a href="registration.php">Register here</a>.</p>
+
+        <div class="register-link">
+            <p>New registration? <a href="register.php">Register here</a></p>
+        </div>
+        <div class="forgot-password-link">
+            <p><a href="forgot_password.php">Forgot Password?</a></p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Error
+            </div>
+            <p><?= $errorMessage ?></p>
+            <button onclick="closeModal()">OK</button>
+        </div>
     </div>
 </body>
 </html>
